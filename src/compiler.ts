@@ -13,16 +13,19 @@ export class UniqueId {
   }
 }
 
+// 指令类型
 type AsmInst
   = { type: 'label', name: string }
-  | { type: 'reference', label: string }
-  | { type: 'opcode', opcode: OpCode, comment?: string }
-  | { type: 'data', data: number[], rawData: string | number }
-  | { type: 'comment', comment: string };
+  | { type: 'reference', label: string }  //
+  | { type: 'opcode', opcode: OpCode, comment?: string }  //操作码
+  | { type: 'data', data: number[], rawData: string | number }  // 操作数
+  | { type: 'comment', comment: string };  //注释
+
 
 export class Compiler {
   private uniqueId: UniqueId = new UniqueId();
   private parser: Parser = new Parser(this.uniqueId);
+  // 指令
   private instructions: AsmInst[] = [];
   private controlBlockStack: { continue?: string, break?: string }[] = [];
 
@@ -33,18 +36,19 @@ export class Compiler {
     this.controlBlockStack = [];
   }
 
-  // 创建 label
+  // 创建label(含唯一id)
   createLabelName(name: string): string {
     return `.${name}_${this.uniqueId.get()}`;
   }
 
-  // 基本输出
   private writeLabel(name: string) {
     this.instructions.push({ type: 'label', name });
   }
 
   private writeReference(name: string) {
+    // 添加指令: OpCode.ADDR
     this.writeOp(OpCode.ADDR);
+    // 添加指令: reference
     this.instructions.push({ type: 'reference', label: name });
   }
 
@@ -81,6 +85,7 @@ export class Compiler {
     this.instructions.push({ type: 'comment', comment });
   }
 
+  // 把语句编译为指令
   private compileStatement(stat: Statement) {
     switch (stat.type) {
       case 'EmptyStatement':
@@ -93,6 +98,8 @@ export class Compiler {
         }
         break;
       }
+
+      // 把break编译为reference指令
       case 'BreakStatement': {
         for (let i = this.controlBlockStack.length - 1; i >= 0; i--) {
           const { break: breakLabel } = this.controlBlockStack[i];
@@ -101,7 +108,7 @@ export class Compiler {
             break;
           }
         }
-        this.writeOp(OpCode.JUMP);
+        this.writeOp(OpCode.JUMP); // 跳转到...
         break;
       }
       case 'ContinueStatement': {
@@ -112,7 +119,7 @@ export class Compiler {
             break;
           }
         }
-        this.writeOp(OpCode.JUMP);
+        this.writeOp(OpCode.JUMP); // 跳转到...
         break;
       }
       case 'IfStatement': {
@@ -128,7 +135,7 @@ export class Compiler {
 
         if (alternate) {
           this.writeReference(endLabel);
-          this.writeOp(OpCode.JUMP);
+          this.writeOp(OpCode.JUMP);  // 跳转到...
           this.writeLabel(altLabel);
           this.compileStatement(alternate);
         }
@@ -156,7 +163,7 @@ export class Compiler {
             this.writeOp(OpCode.JUMPIF);
           } else {
             this.writeReference(defaultLabel);
-            this.writeOp(OpCode.JUMP);
+            this.writeOp(OpCode.JUMP);  // 跳转到...
           }
         }
         for (let i = 0; i < cases.length; i++) {
@@ -214,7 +221,7 @@ export class Compiler {
         const endLabel = this.createLabelName('for_end');
         this.controlBlockStack.push({ continue: updateLabel, break: endLabel });
 
-        if (stat.init) {
+        if (stat.init) { // 如果存在初始表达式
           const init: Statement = /Expression$/.test(stat.init.type)
             ? { type: 'ExpressionStatement', expression: stat.init as Expression }
             : (stat.init as Statement)
@@ -222,23 +229,23 @@ export class Compiler {
         }
 
         this.writeLabel(startLabel);
-        this.compileStatement(stat.body);
+        this.compileStatement(stat.body); // 编译for块内部代码
         this.writeLabel(updateLabel);
 
-        if (stat.update) {
+        if (stat.update) { // 如果存在更新表达式
           this.compileStatement({
             type: 'ExpressionStatement',
             expression: stat.update
           });
         }
 
-        if (stat.test) {
+        if (stat.test) { // 如果存在条件判断
           this.compileExpression(stat.test)
           this.writeReference(startLabel);
-          this.writeOp(OpCode.JUMPIF);
+          this.writeOp(OpCode.JUMPIF); // 跳转到条件判断
         } else {
           this.writeReference(startLabel);
-          this.writeOp(OpCode.JUMP);
+          this.writeOp(OpCode.JUMP);  // 当不存在条件判断语句时,总是跳转到for体开头(形成死循环)
         }
 
         this.writeLabel(endLabel);
@@ -297,6 +304,7 @@ export class Compiler {
     }
   }
 
+  // 把成员表达式编译为指令
   private compileMemberAndProperty(expr: MemberExpression) {
     this.compileExpression(expr.object as Expression);
     if (expr.computed) {
@@ -306,6 +314,7 @@ export class Compiler {
     }
   }
 
+  // 把表达式编译为指令
   private compileExpression(expr: Expression) {
     switch (expr.type) {
       case 'Identifier': {
@@ -506,6 +515,8 @@ export class Compiler {
         }
         break;
       }
+
+      // 逻辑表达式
       case 'LogicalExpression': {
         const label = this.createLabelName('logic_end');
         const { left, right, operator } = expr;
@@ -513,7 +524,7 @@ export class Compiler {
         this.writeOp(OpCode.TOP);
         this.writeReference(label);
         if (operator === '&&') {
-          this.writeOp(OpCode.JUMPIF);
+          this.writeOp(OpCode.JUMPIF); 
           this.compileExpression(right);
           this.writeOp(OpCode.AND);
         } else if (operator === '||') {
@@ -529,16 +540,17 @@ export class Compiler {
         this.writeOp(OpCode.GET);
         break;
       }
+      // 条件表达式(三目表达式)
       case 'ConditionalExpression': {
         const endLabel = this.createLabelName('cond_end');
         const altLabel = this.createLabelName('cond_alt');
         const { test, consequent, alternate } = expr;
-        this.compileExpression(test);
-        this.writeLabel(altLabel);
-        this.writeOp(OpCode.JUMPNOT);
-        this.compileExpression(consequent);
+        this.compileExpression(test); // 编译条件判断表达式
+        this.writeLabel(altLabel); 
+        this.writeOp(OpCode.JUMPNOT); // 条件判断为true时,不跳转
+        this.compileExpression(consequent);  
         this.writeReference(endLabel);
-        this.writeOp(OpCode.JUMP);
+        this.writeOp(OpCode.JUMP); // 条件判断为false时, jump到alterlabel(含uniqueId)
         this.writeLabel(altLabel);
         this.compileExpression(alternate);
         this.writeLabel(endLabel);
@@ -607,6 +619,7 @@ export class Compiler {
     }
   }
 
+  // 把块编译为指令
   private compileBlock(block: Program | Function) {
     this.writeLabel(block.label);
 
@@ -625,6 +638,7 @@ export class Compiler {
       }
       case 'FunctionExpression':
       case 'FunctionDeclaration': {
+        // 把函数参数编译为指令
         for (let i = 0; i < block.params.length; i++) {
           const id = block.params[i] as Identifier;
           // 声明参数
@@ -643,25 +657,32 @@ export class Compiler {
           this.writeString(name);
           this.writeOp(OpCode.VAR);
         }
+        // 把函数体编译为指令
         this.compileStatement(block.body);
+        // 额外添加undefined指令
         this.writeOp(OpCode.UNDEF);
+        // 额外添加返回指令
         this.writeOp(OpCode.RET);
         break;
       }
     }
   }
 
+  // 编译为指令
   compile(source: string) {
     this.clear();
+
+    // 代码字符串=>AST节点树=>块
     const blocks = this.parser.parse(source);
+    console.log("blocks:", JSON.stringify(blocks))
 
-    this.compile
-
+    // 编译每个块为指令
     for (const block of blocks) {
       this.compileBlock(block);
     }
   }
 
+  // 控制台输出所有指令
   show() {
     const lines: string[] = [];
     for (const inst of this.instructions) {
@@ -690,6 +711,7 @@ export class Compiler {
     console.log(lines.join('\n'));
   }
 
+  // 转为数组
   toNumberArray(): number[] {
     const labelMap = new Map<string, {
       address: number,

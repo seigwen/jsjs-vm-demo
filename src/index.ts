@@ -13,13 +13,19 @@ async function __main__() {
   const testCode = fs.readFileSync(path.join(__dirname, '../test-code.js'), 'utf8');
   compiler.compile(testCode);
 
+  // 转为数组
   const codes = compiler.toNumberArray();
+  console.log("original codes:", codes)
+
+  // 控制台输出所有指令
+  console.log("instructions:")
   compiler.show();
 
   // const globalScope = new GlobalScope(global);
   // const vm = new VirtualMachine(globalScope, codes);
   // vm.run()
 
+  // 读取源照片, 修改数据
   const image = await Jimp.read('./origin.jpg');
   const buffer = image.bitmap.data;
 
@@ -37,8 +43,10 @@ async function __main__() {
     }
   }
 
+  // 重新写入图片
   await image.quality(100).writeAsync('./target.png');
 
+  // 读取含加密内容的图片并解密
   const targetImage = await Jimp.read('./target.png');
   const targetBuffer = targetImage.bitmap.data;
   const targetCodes = [];
@@ -55,7 +63,7 @@ async function __main__() {
     }
     targetCodes.push(byte);
   }
-  console.log(targetCodes);
+  console.log("targetCodes:",targetCodes);
 
   for (let i = 0; i < codes.length; i++) {
     if (codes[i] !== targetCodes[i]) {
@@ -63,6 +71,11 @@ async function __main__() {
     }
   }
 
+  const globalScope = new GlobalScope(global);
+  const vm = new VirtualMachine(globalScope, codes);
+  vm.run()
+
+  
   // for (let i = 0; i < 1e3; i = i + 4) {
   //   console.log([0, 1, 2, 3].map(n => targetBuffer[i + n].toString(16).padStart(2, '0')));
   //   debugger;

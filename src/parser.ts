@@ -24,9 +24,12 @@ export class Parser {
   }
 
   parse(code: string): (Program | Function)[] {
+    // 解析为AST
     const program = acorn.parse(code, {
       ecmaVersion: 5
     }) as Node;
+    console.log("programs:", JSON.stringify(program))
+
 
     let blocks: (Program | Function)[] = [];
 
@@ -39,6 +42,7 @@ export class Parser {
           throw new Error(`Unsupported Syntax: ${node.type}`);
       }
 
+      // 如何理解此段switch/case, 为什么遇到这四种node,就放入该node放入blocks ??????????
       switch (node.type) {
         case 'Program':
           node.declarations = new Set();

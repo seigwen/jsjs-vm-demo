@@ -7,40 +7,39 @@ export enum OpCode {
   // 空指令，占位用
   NOP = 0x00,
 
-  // push 基本数据
+  // 数据入栈
   UNDEF = 0x01,
   NULL = 0x02,
   OBJ = 0x03,
-  ARR = 0x04,
+  ARR = 0x04, // 数组
   TRUE = 0x05,
   FALSE = 0x06,
-
   NUM = 0x07, // 后面跟 64 位 double 数字字面量
-  ADDR = 0x08,
+  ADDR = 0x08, // 地址入栈
   STR = 0x09, // 后面跟 16 位为一个字符长度 0x0000 表示结尾的字符串字面量
 
   // 基本栈操作
-  POP = 0x0A,
+  POP = 0x0A,  // 栈顶变量出栈
   // SWP = 0x0B,
   // CLEAN = 0x0C,
-  TOP = 0x0D,
-  TOP2 = 0x0E,
+  TOP = 0x0D, // 入栈
+  TOP2 = 0x0E,  // 入栈2个变量
 
   // 数据存储
-  VAR = 0x10,
-  LOAD = 0x11,
-  OUT = 0x12,
+  VAR = 0x10,  // 变量从栈顶挪到局部变量区.
+  LOAD = 0x11,  // 从栈顶弹出变量名称,根据该变量名称,从作用域获取变量值,把变量值入栈
+  OUT = 0x12,  // 从栈顶弹出变量名称和变量值,更改作用域的该变量的值
 
   // 分支跳转
-  JUMP = 0x20,
-  JUMPIF = 0x21,
-  JUMPNOT = 0x22,
+  JUMP = 0x20,  // 跳转到开头
+  JUMPIF = 0x21, // 跳转到判断结果为true的blcok
+  JUMPNOT = 0x22, // 跳转到判断结果为false的blcok
 
   // 函数
-  FUNC = 0x30,
+  FUNC = 0x30, 
   CALL = 0x31,
   NEW = 0x32,
-  RET = 0x33,
+  RET = 0x33,  // 函数返回
 
   // 对象操作
   GET = 0x40,
