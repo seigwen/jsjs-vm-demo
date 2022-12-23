@@ -14,9 +14,9 @@ export class UniqueId {
 }
 
 // 指令类型
-type AsmInst
-  = { type: 'label', name: string }
-  | { type: 'reference', label: string }  //
+type AsmInstruction
+  = { type: 'label', name: string }  // 跳转目的地的名称, 可能值: alt, start, end, default, update, block, test 
+  | { type: 'reference', label: string }   // 引用,指向label
   | { type: 'opcode', opcode: OpCode, comment?: string }  //操作码
   | { type: 'data', data: number[], rawData: string | number }  // 操作数
   | { type: 'comment', comment: string };  //注释
@@ -26,7 +26,7 @@ export class Compiler {
   private uniqueId: UniqueId = new UniqueId();
   private parser: Parser = new Parser(this.uniqueId);
   // 指令
-  private instructions: AsmInst[] = [];
+  private instructions: AsmInstruction[] = [];
   private controlBlockStack: { continue?: string, break?: string }[] = [];
 
   // 初始化编译器
@@ -41,10 +41,12 @@ export class Compiler {
     return `.${name}_${this.uniqueId.get()}`;
   }
 
+  // 写入地址标签名称
   private writeLabel(name: string) {
     this.instructions.push({ type: 'label', name });
   }
 
+  // 写入地址引用名称
   private writeReference(name: string) {
     // 添加指令: OpCode.ADDR
     this.writeOp(OpCode.ADDR);
@@ -56,29 +58,33 @@ export class Compiler {
     this.instructions.push({ type: 'opcode', opcode: code, comment });
   }
 
+  // 写入数字
   private writeNumber(nu: number) {
-    const inst: AsmInst = { type: 'data', rawData: nu, data: [] };
+    const instruction: AsmInstruction = { type: 'data', rawData: nu, data: [] };
     const dv = new DataView(new ArrayBuffer(8));
     dv.setFloat64(0, nu);
     for (let i = 0; i < 8; i++) {
-      inst.data.push(dv.getUint8(i));
+      // 写入8个字节的数字(float64)作为操作码
+      instruction.data.push(dv.getUint8(i));
     }
     this.writeOp(OpCode.NUM);
-    this.instructions.push(inst);
+    this.instructions.push(instruction);
   }
 
+  // 写入字符串
   private writeString(str: string) {
-    const inst: AsmInst = { type: 'data', rawData: str, data: [] };
+    const instruction: AsmInstruction = { type: 'data', rawData: str, data: [] };
     const dv = new DataView(new ArrayBuffer(2));
     for (const c of str) {
+      // 对每个字符,写入2个字节的编码作为操作码
       dv.setUint16(0, c.charCodeAt(0));
-      inst.data.push(dv.getUint8(0));
-      inst.data.push(dv.getUint8(1));
+      instruction.data.push(dv.getUint8(0));
+      instruction.data.push(dv.getUint8(1));
     }
-    inst.data.push(0);
-    inst.data.push(0);
+    instruction.data.push(0);
+    instruction.data.push(0);
     this.writeOp(OpCode.STR);
-    this.instructions.push(inst);
+    this.instructions.push(instruction);
   }
 
   private writeComment(comment: string) {
@@ -86,14 +92,14 @@ export class Compiler {
   }
 
   // 把语句编译为指令
-  private compileStatement(stat: Statement) {
-    switch (stat.type) {
+  private compileStatement(statement: Statement) {
+    switch (statement.type) {
       case 'EmptyStatement':
       case 'DebuggerStatement': {
         break;
       }
       case 'BlockStatement': {
-        for (const _stat of stat.body) {
+        for (const _stat of statement.body) {
           this.compileStatement(_stat);
         }
         break;
@@ -126,7 +132,7 @@ export class Compiler {
         const endLabel = this.createLabelName('cond_end');
         const altLabel = this.createLabelName('cond_alt');
 
-        const { test, consequent, alternate } = stat;
+        const { test, consequent, alternate } = statement;
 
         this.compileExpression(test);
         this.writeReference(alternate ? altLabel : endLabel);
@@ -151,7 +157,7 @@ export class Compiler {
 
         this.controlBlockStack.push({ break: endLabel });
 
-        const { discriminant, cases } = stat;
+        const { discriminant, cases } = statement;
         this.compileExpression(discriminant);
         for (let i = 0; i < cases.length; i++) {
           const c = cases[i];
@@ -189,10 +195,10 @@ export class Compiler {
         const endLabel = this.createLabelName('while_end');
         this.controlBlockStack.push({ continue: startLabel, break: endLabel });
         this.writeLabel(startLabel);
-        this.compileExpression(stat.test);
+        this.compileExpression(statement.test);
         this.writeReference(endLabel);
         this.writeOp(OpCode.JUMPNOT);
-        this.compileStatement(stat.body);
+        this.compileStatement(statement.body);
         this.writeLabel(endLabel);
         this.controlBlockStack.pop();
         break;
@@ -205,9 +211,9 @@ export class Compiler {
 
         this.controlBlockStack.push({ continue: testLabel, break: endLabel });
         this.writeLabel(startLabel);
-        this.compileStatement(stat.body);
+        this.compileStatement(statement.body);
         this.writeLabel(testLabel);
-        this.compileExpression(stat.test);
+        this.compileExpression(statement.test);
         this.writeReference(startLabel);
         this.writeOp(OpCode.JUMPIF);
         this.writeLabel(endLabel);
@@ -221,26 +227,26 @@ export class Compiler {
         const endLabel = this.createLabelName('for_end');
         this.controlBlockStack.push({ continue: updateLabel, break: endLabel });
 
-        if (stat.init) { // 如果存在初始表达式
-          const init: Statement = /Expression$/.test(stat.init.type)
-            ? { type: 'ExpressionStatement', expression: stat.init as Expression }
-            : (stat.init as Statement)
+        if (statement.init) { // 如果存在初始表达式
+          const init: Statement = /Expression$/.test(statement.init.type)
+            ? { type: 'ExpressionStatement', expression: statement.init as Expression }
+            : (statement.init as Statement)
           this.compileStatement(init);
         }
 
         this.writeLabel(startLabel);
-        this.compileStatement(stat.body); // 编译for块内部代码
+        this.compileStatement(statement.body); // 编译for块内部代码
         this.writeLabel(updateLabel);
 
-        if (stat.update) { // 如果存在更新表达式
+        if (statement.update) { // 如果存在更新表达式
           this.compileStatement({
             type: 'ExpressionStatement',
-            expression: stat.update
+            expression: statement.update
           });
         }
 
-        if (stat.test) { // 如果存在条件判断
-          this.compileExpression(stat.test)
+        if (statement.test) { // 如果存在条件判断
+          this.compileExpression(statement.test)
           this.writeReference(startLabel);
           this.writeOp(OpCode.JUMPIF); // 跳转到条件判断
         } else {
@@ -262,7 +268,7 @@ export class Compiler {
           type: 'ExpressionStatement',
           expression: {
             type: 'SequenceExpression',
-            expressions: stat.declarations.filter(v => v.init).map(v => ({
+            expressions: statement.declarations.filter(v => v.init).map(v => ({
               type: 'AssignmentExpression',
               operator: '=',
               left: { type: 'Identifier', name: (v.id as Identifier).name },
@@ -274,17 +280,17 @@ export class Compiler {
       }
       case 'FunctionDeclaration': {
         this.writeOp(OpCode.NULL);
-        this.writeNumber(stat.params.length);
-        this.writeReference(stat.label);
+        this.writeNumber(statement.params.length);
+        this.writeReference(statement.label);
         this.writeOp(OpCode.FUNC);
-        this.writeString((stat.id as Identifier).name);
+        this.writeString((statement.id as Identifier).name);
         this.writeOp(OpCode.OUT);
         this.writeOp(OpCode.POP)
         break;
       }
       case 'ReturnStatement': {
-        if (stat.argument) {
-          this.compileExpression(stat.argument);
+        if (statement.argument) {
+          this.compileExpression(statement.argument);
         } else {
           this.writeOp(OpCode.UNDEF);
         }
@@ -292,7 +298,7 @@ export class Compiler {
         break;
       }
       case 'ExpressionStatement': {
-        this.compileExpression(stat.expression);
+        this.compileExpression(statement.expression);
         this.writeOp(OpCode.POP);
         break;
       }
@@ -300,7 +306,7 @@ export class Compiler {
       // case 'TryStatement': 
       // case 'LabeledStatement': 
       default:
-        throw new Error(`Unsupported statement type: ${stat.type}`);
+        throw new Error(`Unsupported statement type: ${statement.type}`);
     }
   }
 
@@ -685,29 +691,33 @@ export class Compiler {
   // 控制台输出所有指令
   show() {
     const lines: string[] = [];
-    for (const inst of this.instructions) {
-      switch (inst.type) {
+    console.log("\ninstructions:", JSON.stringify(this.instructions))
+    for (const instruction of this.instructions) {
+      switch (instruction.type) {
+        // 函数名称等跳转目的地
         case 'label': {
-          lines.push(`${inst.name}:`);
+          lines.push(`${instruction.name}:`);
           break;
         }
+        // 引用,指向label
         case 'reference': {
-          lines.push(`\t${inst.label}`);
+          lines.push(`\t${instruction.label}`);
           break;
         }
         case 'opcode': {
-          lines.push(`\t${OpCode[inst.opcode]}(${inst.opcode.toString(16).padStart(2, '0')})${inst.comment ? ` # ${inst.comment}` : ''}`);
+          lines.push(`\t${OpCode[instruction.opcode]}(${instruction.opcode.toString(16).padStart(2, '0')})${instruction.comment ? ` # ${instruction.comment}` : ''}`);
           break;
         }
         case 'data': {
-          lines.push(`\t${JSON.stringify(inst.rawData)} (${inst.data.map(d => d.toString(16).padStart(2, '0')).join(' ')})`);
+          lines.push(`\t${JSON.stringify(instruction.rawData)} (${instruction.data.map(d => d.toString(16).padStart(2, '0')).join(' ')})`);
           break;
         }
         case 'comment': {
-          lines.push(`\t# ${inst.comment}`);
+          lines.push(`\t# ${instruction.comment}`);
         }
       }
     }
+    console.log("instructions:")
     console.log(lines.join('\n'));
   }
 
@@ -719,27 +729,28 @@ export class Compiler {
     }>();
     const codes: number[] = [];
 
-    for (const inst of this.instructions) {
-      switch (inst.type) {
+    for (const instruction of this.instructions) {
+      switch (instruction.type) {
         case 'label': {
-          const label = labelMap.get(inst.name) || { address: 0, references: [] };
+          const label = labelMap.get(instruction.name) || { address: 0, references: [] };
           label.address = codes.length;
-          labelMap.set(inst.name, label);
+          labelMap.set(instruction.name, label);
           break;
         }
+         // 引用,指向label
         case 'reference': {
-          const label = labelMap.get(inst.label) || { address: 0, references: [] };
+          const label = labelMap.get(instruction.label) || { address: 0, references: [] };
           label.references.push(codes.length);
           codes.push(0, 0, 0, 0);
-          labelMap.set(inst.label, label);
+          labelMap.set(instruction.label, label);
           break;
         }
         case 'opcode': {
-          codes.push(inst.opcode);
+          codes.push(instruction.opcode);
           break;
         }
         case 'data': {
-          codes.push(...inst.data);
+          codes.push(...instruction.data);
         }
       }
     }

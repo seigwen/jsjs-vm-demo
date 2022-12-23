@@ -18,7 +18,6 @@ async function __main__() {
   console.log("original codes:", codes)
 
   // 控制台输出所有指令
-  console.log("instructions:")
   compiler.show();
 
   // const globalScope = new GlobalScope(global);

@@ -1,4 +1,4 @@
-import { OpCode } from "./constrains";
+import { OpCode } from './constrains';
 
 export class Scope {
   private parent?: Scope;
@@ -8,12 +8,12 @@ export class Scope {
     this.parent = parent;
   }
 
-  // 在作用域添加变量并设置其值为undefined
+  // 变量从栈顶挪到局部变量区.
   var(name: string) {
     this.content.set(name, undefined);
   }
 
-  // 从作用域获取变量
+  // 从栈顶弹出变量名称,根据该变量名称,从作用域获取变量值,把变量值入栈
   load(name: string): unknown {
     if (this.content.has(name)) {
       return this.content.get(name);
@@ -23,7 +23,7 @@ export class Scope {
     throw new Error(`Variable ${name} not found`);
   }
 
-  // 更改作用域的变量的值
+  // 从栈顶弹出变量名称和变量值,更改作用域的该变量的值
   out(name: string, value: unknown): unknown {
     if (this.content.has(name)) {
       this.content.set(name, value);
@@ -42,6 +42,7 @@ export class GlobalScope extends Scope {
     this.global = global;
   }
 
+  // 从栈顶弹出变量名称,根据该变量名称,从作用域获取变量值,把变量值入栈
   load(name: string) {
     try { return super.load(name) } catch (e) { }
     if (this.global.hasOwnProperty(name)) {
@@ -50,6 +51,7 @@ export class GlobalScope extends Scope {
     throw new Error(`Variable ${name} not found`);
   }
 
+  // 从栈顶弹出变量名称和变量值,更改作用域的该变量的值
   out(name: string, value: unknown) {
     try { return super.out(name, value) } catch (e) { }
     this.global[name] = value;
@@ -61,30 +63,30 @@ export class VirtualMachine {
   private scope: any;
   private codes: number[];
   private stack: unknown[];
-  private pc: number; // VM从第${pc}个操作码开始执行
+  private pieceOfCode: number; // pieceOfCode指操作码, 每个操作码占位一个字节
 
   constructor(scope: any, codes: number[], pc: number = 0, stack: unknown[] = []) {
     this.scope = scope;
     this.codes = codes;
-    this.pc = pc;
+    this.pieceOfCode = pc;
     this.stack = stack;
   }
 
   private loadAddress() {
     const dv = new DataView(new ArrayBuffer(8));
     for (let i = 0; i < 4; i++) {
-      dv.setUint8(i, this.codes[this.pc + i]);
+      dv.setUint8(i, this.codes[this.pieceOfCode + i]);
     }
-    this.pc += 4;
+    this.pieceOfCode += 4;
     this.stack.push(dv.getUint32(0));
   }
 
   private loadNumber() {
     const dv = new DataView(new ArrayBuffer(8));
     for (let i = 0; i < 8; i++) {
-      dv.setUint8(i, this.codes[this.pc + i]);
+      dv.setUint8(i, this.codes[this.pieceOfCode + i]);
     }
-    this.pc += 8;
+    this.pieceOfCode += 8;
     this.stack.push(dv.getFloat64(0));
   }
 
@@ -92,12 +94,12 @@ export class VirtualMachine {
     const dv = new DataView(new ArrayBuffer(2));
     let str = '';
     for (let i = 0; true; i += 2) {
-      dv.setUint16(0, this.codes[this.pc + i] << 8 | this.codes[this.pc + i + 1]);
+      dv.setUint16(0, this.codes[this.pieceOfCode + i] << 8 | this.codes[this.pieceOfCode + i + 1]);
       const charCode = dv.getUint16(0);
       if (charCode) {
         str += String.fromCharCode(charCode);
       } else {
-        this.pc = this.pc + i + 2;
+        this.pieceOfCode = this.pieceOfCode + i + 2;
         this.stack.push(str);
         return;
       }
@@ -106,10 +108,9 @@ export class VirtualMachine {
 
   run() {
     while (true) {
-      const code = this.codes[this.pc++];
+      const code = this.codes[this.pieceOfCode++];
       console.log("stack:",this.stack);
-      console.log("code to be executed:", code)
-
+      console.log("code executed:", OpCode[code])
       switch (code) {
         case OpCode.NOP: break;
 
@@ -145,20 +146,23 @@ export class VirtualMachine {
         // 从栈顶弹出变量名称和变量值,更改作用域的变量的值
         case OpCode.OUT: this.stack.push(this.scope.out(this.stack.pop(), this.stack.pop())); break;
 
-        // 跳转
-        case OpCode.JUMP: this.pc = this.stack.pop() as number; break;
-        // 跳转到条件判断语句为true
+        // 跳到从栈中弹出的地址
+        case OpCode.JUMP: 
+          const addr = this.stack.pop()
+          this.pieceOfCode = addr as number; 
+          break;
+        // 如果从栈中弹出的test结果为true,则跳到从栈中弹出的地址
         case OpCode.JUMPIF: {
           const addr = this.stack.pop();
           const test = this.stack.pop();
-          if (test) { this.pc = addr as number };
+          if (test) { this.pieceOfCode = addr as number };
           break;
         }
-        // 跳转到条件判断语句为false
+        // 如果从栈中弹出的test结果为false,则跳到从栈中弹出的地址
         case OpCode.JUMPNOT: {
-          const addr = this.stack.pop();
+          const addr = this.stack.pop(); 
           const test = this.stack.pop();
-          if (!test) { this.pc = addr as number };
+          if (!test) { this.pieceOfCode = addr as number };
           break;
         }
 

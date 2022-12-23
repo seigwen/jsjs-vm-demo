@@ -1,3 +1,5 @@
+// 后续遍历AST
+
 import { Node } from "estree";
 
 const isNode = (target: any): target is Node =>
