@@ -2,7 +2,7 @@ import { OpCode } from './constrains';
 
 export class Scope {
   private parent?: Scope;
-  private content: Map<string, unknown> = new Map();
+  public content: Map<string, unknown> = new Map();
 
   constructor(parent?: Scope) {
     this.parent = parent;
@@ -110,6 +110,11 @@ export class VirtualMachine {
     while (true) {
       const code = this.codes[this.pieceOfCode++];
       console.log("stack:",this.stack);
+      let s = Object.create(null)
+      this.scope.content?.forEach((value:any, key:any)=>{
+        s[key] = value
+      })
+      console.log("scope:",s);
       console.log("code executed:", OpCode[code])
       switch (code) {
         case OpCode.NOP: break;

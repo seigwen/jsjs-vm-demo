@@ -32,6 +32,8 @@
 // var e = a * b + c * d
 
 function f(){
-	"a"
+	var a = 1;
+	var b = a + 3;
+	return b;
 }
-f()
+f();

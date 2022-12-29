@@ -1,11 +1,11 @@
 {
 	"compilerOptions": {
-		"target": "ESNext",
-		"module": "commonjs",
+		"target": "ESNext", // js version of target files
+		"module": "commonjs",  // module system of target files
 		"sourceMap": true,
-		"allowJs": false,
+		"allowJs": false, //Allow JavaScript files to be imported inside your project
 		"outDir": "dist",
-
+		"declaration": true,
 		"noImplicitAny": true,
 		"strict": true,
 		"alwaysStrict": true,

@@ -4,6 +4,7 @@ import { UniqueId } from './compiler';
 
 import { traverse } from './traverse';
 
+// 为estree模块的program接口和baseFunction接口添加字段
 declare module 'estree' {
   interface Program {
     declarations: Set<string>,
