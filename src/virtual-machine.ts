@@ -2,18 +2,28 @@ import { OpCode } from './constrains';
 
 export class Scope {
   private parent?: Scope;
+  /**
+   * 作用域变量集合
+   */
   public content: Map<string, unknown> = new Map();
 
   constructor(parent?: Scope) {
     this.parent = parent;
   }
 
-  // 变量从栈顶挪到局部变量区.
+  /**
+   * 把变量放入content属性内
+   * @param name 
+   */
   var(name: string) {
     this.content.set(name, undefined);
   }
 
-  // 从栈顶弹出变量名称,根据该变量名称,从作用域获取变量值,把变量值入栈
+  /**
+   * 从content属性内找到指定变量的值,如果本scope没有则从父scope找
+   * @param name 
+   * @returns 
+   */
   load(name: string): unknown {
     if (this.content.has(name)) {
       return this.content.get(name);
@@ -23,7 +33,12 @@ export class Scope {
     throw new Error(`Variable ${name} not found`);
   }
 
-  // 从栈顶弹出变量名称和变量值,更改作用域的该变量的值
+  /**
+   * 更新content属性内指定变量的值
+   * @param name 变量名
+   * @param value 新值
+   * @returns 
+   */
   out(name: string, value: unknown): unknown {
     if (this.content.has(name)) {
       this.content.set(name, value);
@@ -42,7 +57,11 @@ export class GlobalScope extends Scope {
     this.global = global;
   }
 
-  // 从栈顶弹出变量名称,根据该变量名称,从作用域获取变量值,把变量值入栈
+  /**
+   * 从content属性内找到指定变量的值,如果本scope没有则从父scope找
+   * @param name 
+   * @returns 
+   */
   load(name: string) {
     try { return super.load(name) } catch (e) { }
     if (this.global.hasOwnProperty(name)) {
@@ -51,7 +70,12 @@ export class GlobalScope extends Scope {
     throw new Error(`Variable ${name} not found`);
   }
 
-  // 从栈顶弹出变量名称和变量值,更改作用域的该变量的值
+  /**
+   * 更新content属性内指定变量的值
+   * @param name 变量名
+   * @param value 新值
+   * @returns 
+   */
   out(name: string, value: unknown) {
     try { return super.out(name, value) } catch (e) { }
     this.global[name] = value;
@@ -59,11 +83,22 @@ export class GlobalScope extends Scope {
 }
 
 export class VirtualMachine {
-
+  /**
+   * 作用域
+   */
   private scope: any;
+  /**
+   * 指令数组
+   */
   private codes: number[];
+  /**
+   * 栈 (栈式虚拟机的核心)
+   */
   private stack: unknown[];
-  private pieceOfCode: number; // pieceOfCode指操作码, 每个操作码占位一个字节
+  /**
+  * 指向当前运行位置的指针(其实就是指令数组的下标). 常用于跳转
+  */
+  private pieceOfCode: number; 
 
   constructor(scope: any, codes: number[], pc: number = 0, stack: unknown[] = []) {
     this.scope = scope;
@@ -72,15 +107,24 @@ export class VirtualMachine {
     this.stack = stack;
   }
 
+  /**
+   * 地址入栈
+   */
   private loadAddress() {
     const dv = new DataView(new ArrayBuffer(8));
+    // 获取地址
     for (let i = 0; i < 4; i++) {
       dv.setUint8(i, this.codes[this.pieceOfCode + i]);
     }
+    // 更新pc
     this.pieceOfCode += 4;
+    // 地址入栈
     this.stack.push(dv.getUint32(0));
   }
 
+  /**
+   * 数字入栈
+   */
   private loadNumber() {
     const dv = new DataView(new ArrayBuffer(8));
     for (let i = 0; i < 8; i++) {
@@ -90,6 +134,9 @@ export class VirtualMachine {
     this.stack.push(dv.getFloat64(0));
   }
 
+  /**
+   * 字符串入栈
+   */
   private loadString() {
     const dv = new DataView(new ArrayBuffer(2));
     let str = '';
@@ -106,16 +153,20 @@ export class VirtualMachine {
     }
   }
 
+  /**
+   * 虚拟机运行指令
+   */
   run() {
     while (true) {
+      // 读取新一行指令
       const code = this.codes[this.pieceOfCode++];
-      console.log("stack:",this.stack);
+      console.log("\nstack:", this.stack);
       let s = Object.create(null)
-      this.scope.content?.forEach((value:any, key:any)=>{
+      this.scope.content?.forEach((value: any, key: any) => {
         s[key] = value
       })
-      console.log("scope:",s);
-      console.log("code executed:", OpCode[code])
+      console.log("\nscope:", s);
+      console.log("\ncode executed:", OpCode[code])
       switch (code) {
         case OpCode.NOP: break;
 
@@ -144,28 +195,33 @@ export class VirtualMachine {
           this.stack[this.stack.length - 1],
         ); break;
 
-        // 栈顶变量移动到局部变量区
+        // 栈顶变量出栈, 放入作用域内
         case OpCode.VAR: this.scope.var(this.stack.pop()); break;
         // 从栈顶弹出变量名称,根据该变量称从作用域获取变量值,把变量值入栈
         case OpCode.LOAD: this.stack.push(this.scope.load(this.stack.pop())); break;
-        // 从栈顶弹出变量名称和变量值,更改作用域的变量的值
+        // 从栈顶弹出变量名称和变量值,更改作用域的对应变量的值
         case OpCode.OUT: this.stack.push(this.scope.out(this.stack.pop(), this.stack.pop())); break;
 
         // 跳到从栈中弹出的地址
-        case OpCode.JUMP: 
+        case OpCode.JUMP:
+          // 弹出目标地址
           const addr = this.stack.pop()
-          this.pieceOfCode = addr as number; 
+          this.pieceOfCode = addr as number;
           break;
         // 如果从栈中弹出的test结果为true,则跳到从栈中弹出的地址
         case OpCode.JUMPIF: {
+          // 弹出目标地址
           const addr = this.stack.pop();
+          // 弹出判断结果
           const test = this.stack.pop();
           if (test) { this.pieceOfCode = addr as number };
           break;
         }
         // 如果从栈中弹出的test结果为false,则跳到从栈中弹出的地址
         case OpCode.JUMPNOT: {
-          const addr = this.stack.pop(); 
+          // 弹出目标地址
+          const addr = this.stack.pop();
+          // 弹出判断结果
           const test = this.stack.pop();
           if (!test) { this.pieceOfCode = addr as number };
           break;
@@ -173,8 +229,11 @@ export class VirtualMachine {
 
         // 函数声明
         case OpCode.FUNC: {
+          // 弹出函数地址
           const addr = this.stack.pop();
-          const len = this.stack.pop(); 
+          // 弹出函数长度
+          const len = this.stack.pop();
+          // 弹出函数名称
           const name = this.stack.pop();
           const _this = this;
 
@@ -193,6 +252,7 @@ export class VirtualMachine {
           Object.defineProperty(func, 'name', { value: name });
           Object.defineProperty(func, 'length', { value: len });
 
+          // 函数入栈
           this.stack.push(func);
           break;
         }
@@ -338,37 +398,37 @@ export class VirtualMachine {
           this.stack.push(~arg);
           break;
         }
-        case OpCode.BOR:{
+        case OpCode.BOR: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left | right);
           break;
         }
-        case OpCode.BXOR:{
+        case OpCode.BXOR: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left ^ right);
           break;
         }
-        case OpCode.BAND:{
+        case OpCode.BAND: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left & right);
           break;
         }
-        case OpCode.LSHIFT:{
+        case OpCode.LSHIFT: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left << right);
           break;
         }
-        case OpCode.RSHIFT:{
+        case OpCode.RSHIFT: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left >> right);
           break;
         }
-        case OpCode.URSHIFT:{
+        case OpCode.URSHIFT: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left >>> right);
@@ -376,19 +436,19 @@ export class VirtualMachine {
         }
 
         // 逻辑运算
-        case OpCode.OR:{
+        case OpCode.OR: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left || right);
           break;
         }
-        case OpCode.AND:{
+        case OpCode.AND: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
           this.stack.push(left && right);
           break;
         }
-        case OpCode.NOT:{
+        case OpCode.NOT: {
           const arg = this.stack.pop() as any;
           this.stack.push(!arg);
           break;
@@ -401,7 +461,7 @@ export class VirtualMachine {
           this.stack.push(left instanceof right);
           break;
         }
-        case OpCode.TYPEOF:{
+        case OpCode.TYPEOF: {
           const arg = this.stack.pop() as any;
           this.stack.push(typeof arg);
           break;

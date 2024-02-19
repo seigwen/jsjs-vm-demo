@@ -1,4 +1,4 @@
-// 后续遍历AST
+// 后序遍历AST
 
 import { Node } from "estree";
 
@@ -30,6 +30,11 @@ const traverseChildren = <T>(func: (node: Node, ctx: T) => Node) => (node: Node,
   return node;
 }
 
+/**
+ * 后序遍历AST
+ * @param func 
+ * @returns 
+ */
 export const traverse = <T>(func: (node: Node, ctx: T, next: (node: Node, ctx: T) => Node) => Node) => {
   const _traverse = (node: Node, ctx: T): Node => func(node, ctx, _traverseChildren);
   const _traverseChildren = traverseChildren(_traverse);

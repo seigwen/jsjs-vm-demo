@@ -24,12 +24,17 @@ export class Parser {
     this.uniqueId = uniqueId;
   }
 
+  /**
+   * 转为AST并检查
+   * @param code 
+   * @returns 
+   */
   parse(code: string): (Program | Function)[] {
     // 解析为AST
     const program = acorn.parse(code, {
       ecmaVersion: 5
     }) as Node;
-    console.log("programs:", JSON.stringify(program))
+    console.log("\nast:", JSON.stringify(program))
 
 
     let blocks: (Program | Function)[] = [];
@@ -43,7 +48,7 @@ export class Parser {
           throw new Error(`Unsupported Syntax: ${node.type}`);
       }
 
-      // 如何理解此段switch/case, 为什么遇到这四种node,就放入该node放入blocks ??????????
+      // 如何理解此段switch/case
       switch (node.type) {
         case 'Program':
           node.declarations = new Set();

@@ -1,8 +1,15 @@
+/**
+ * 把代码编译为指令(代码字符串=>AST=>块=>指令) 
+ */
+
 import { Node, Program, Function, Expression, Statement, Identifier, Property, MemberExpression } from 'estree';
 import { OpCode } from './constrains';
 import { Parser } from "./parser";
 import { VirtualMachine } from './virtual-machine';
 
+/**
+ * 自增ID
+ */
 export class UniqueId {
   private nextId = 1;
   clear() {
@@ -25,28 +32,42 @@ type AsmInstruction
 export class Compiler {
   private uniqueId: UniqueId = new UniqueId();
   private parser: Parser = new Parser(this.uniqueId);
-  // 指令
+  /**
+   * 指令列表
+   */
   private instructions: AsmInstruction[] = [];
   private controlBlockStack: { continue?: string, break?: string }[] = [];
 
-  // 初始化编译器
+  /**
+   * 初始化编译器
+   */
   private clear() {
     this.instructions = []
     this.uniqueId.clear();
     this.controlBlockStack = [];
   }
 
-  // 创建label(含唯一id)
+  /**
+   * 创建label(含唯一id)
+   * @param name 
+   * @returns 
+   */
   createLabelName(name: string): string {
     return `.${name}_${this.uniqueId.get()}`;
   }
 
-  // 写入地址标签名称
+  /**
+   * 写入地址标签名称
+   * @param name 
+   */
   private writeLabel(name: string) {
     this.instructions.push({ type: 'label', name });
   }
 
-  // 写入地址引用名称
+  /**
+   * 写入地址引用名称
+   * @param name 
+   */
   private writeReference(name: string) {
     // 添加指令: OpCode.ADDR
     this.writeOp(OpCode.ADDR);
@@ -54,11 +75,19 @@ export class Compiler {
     this.instructions.push({ type: 'reference', label: name });
   }
 
+  /**
+   * 写入指令
+   * @param code 
+   * @param comment 
+   */
   private writeOp(code: OpCode, comment?: string) {
     this.instructions.push({ type: 'opcode', opcode: code, comment });
   }
 
-  // 写入数字
+  /**
+   * 写入数字
+   * @param nu 
+   */
   private writeNumber(nu: number) {
     const instruction: AsmInstruction = { type: 'data', rawData: nu, data: [] };
     const dv = new DataView(new ArrayBuffer(8));
@@ -71,7 +100,10 @@ export class Compiler {
     this.instructions.push(instruction);
   }
 
-  // 写入字符串
+  /**
+   * 写入字符串
+   * @param str 
+   */
   private writeString(str: string) {
     const instruction: AsmInstruction = { type: 'data', rawData: str, data: [] };
     const dv = new DataView(new ArrayBuffer(2));
@@ -91,7 +123,10 @@ export class Compiler {
     this.instructions.push({ type: 'comment', comment });
   }
 
-  // 把语句编译为指令
+  /**
+   * 把语句编译为指令
+   * @param statement 
+   */
   private compileStatement(statement: Statement) {
     switch (statement.type) {
       case 'EmptyStatement':
@@ -310,7 +345,10 @@ export class Compiler {
     }
   }
 
-  // 把成员表达式编译为指令
+  /**
+   * 把成员表达式编译为指令
+   * @param expr 
+   */
   private compileMemberAndProperty(expr: MemberExpression) {
     this.compileExpression(expr.object as Expression);
     if (expr.computed) {
@@ -320,7 +358,10 @@ export class Compiler {
     }
   }
 
-  // 把表达式编译为指令
+  /**
+   * 把表达式编译为指令
+   * @param expr 
+   */
   private compileExpression(expr: Expression) {
     switch (expr.type) {
       case 'Identifier': {
@@ -625,7 +666,10 @@ export class Compiler {
     }
   }
 
-  // 把块编译为指令
+  /**
+   * 把块编译为指令
+   * @param block 
+   */
   private compileBlock(block: Program | Function) {
     this.writeLabel(block.label);
 
@@ -674,13 +718,16 @@ export class Compiler {
     }
   }
 
-  // 编译为指令
+  /**
+   * 编译为指令(代码字符串=>AST=>块=>指令)
+   * @param source 
+   */
   compile(source: string) {
     this.clear();
 
     // 代码字符串=>AST节点树=>块
     const blocks = this.parser.parse(source);
-    console.log("blocks:", JSON.stringify(blocks))
+    console.log("\nblocks:", JSON.stringify(blocks))
 
     // 编译每个块为指令
     for (const block of blocks) {
@@ -688,7 +735,9 @@ export class Compiler {
     }
   }
 
-  // 控制台输出所有指令
+  /**
+   * 控制台输出所有指令
+   */
   show() {
     const lines: string[] = [];
     console.log("\ninstructions:", JSON.stringify(this.instructions))
@@ -717,7 +766,7 @@ export class Compiler {
         }
       }
     }
-    console.log("instructions:")
+    console.log("\ninstructions prettier:")
     console.log(lines.join('\n'));
   }
 
