@@ -25,7 +25,7 @@ export class Parser {
   }
 
   /**
-   * 转为AST并检查
+   * 代码字符串=>AST节点树=>块
    * @param code 
    * @returns 
    */
@@ -39,6 +39,7 @@ export class Parser {
 
     let blocks: (Program | Function)[] = [];
 
+    // 后续遍历
     traverse<Program | Function>((node, scopeNode, next) => {
       switch (node.type) {
         case 'LabeledStatement':
@@ -48,14 +49,16 @@ export class Parser {
           throw new Error(`Unsupported Syntax: ${node.type}`);
       }
 
-      // 如何理解此段switch/case
+      // 如何理解此段switch/case, 要结合compiler.ts和最终输出的opCode来看
       switch (node.type) {
+        // main block
         case 'Program':
           node.declarations = new Set();
           node.label = '.main_' + this.uniqueId.get();
           blocks.push(node);
           return next(node, node);
 
+        // function expression as a block
         case 'FunctionExpression': {
           node.declarations = new Set();
           node.label = `.${(node.id?.name || 'anonymous')}_${this.uniqueId.get()}`;
@@ -63,6 +66,7 @@ export class Parser {
           return next(node, node);
         }
 
+        // function declaration as a block
         case 'FunctionDeclaration': {
           scopeNode.declarations.add((node.id as Identifier).name);
           node.declarations = new Set();

@@ -70,9 +70,9 @@ async function __main__() {
   //   }
   // }
 
-  // const globalScope = new GlobalScope(global);
-  // const vm = new VirtualMachine(globalScope, codes);
-  // vm.run()
+  const globalScope = new GlobalScope(global);
+  const vm = new VirtualMachine(globalScope, codes);
+  vm.run()
 
   
   // // for (let i = 0; i < 1e3; i = i + 4) {

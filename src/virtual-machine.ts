@@ -1,9 +1,12 @@
 import { OpCode } from './constrains';
 
+/**
+ * 作用域
+ */
 export class Scope {
   private parent?: Scope;
   /**
-   * 作用域变量集合
+   * 属于本作用域的变量的集合
    */
   public content: Map<string, unknown> = new Map();
 
@@ -12,7 +15,7 @@ export class Scope {
   }
 
   /**
-   * 把变量放入content属性内
+   * 在content属性添加子属性并设位置值为undefined
    * @param name 
    */
   var(name: string) {
@@ -34,7 +37,7 @@ export class Scope {
   }
 
   /**
-   * 更新content属性内指定变量的值
+   * 更新作用域链上指定名称的变量的值
    * @param name 变量名
    * @param value 新值
    * @returns 
@@ -170,38 +173,47 @@ export class VirtualMachine {
       switch (code) {
         case OpCode.NOP: break;
 
-        // 变量入栈
+        /**
+         * 数据入栈
+         */ 
         case OpCode.UNDEF: this.stack.push(undefined); break;
         case OpCode.NULL: this.stack.push(null); break;
         case OpCode.OBJ: this.stack.push({}); break;
         case OpCode.ARR: this.stack.push([]); break;
         case OpCode.TRUE: this.stack.push(true); break;
         case OpCode.FALSE: this.stack.push(false); break;
-
-        // 数字转为float64入栈
         case OpCode.NUM: this.loadNumber(); break;
-        // 地址入栈
+        // 函数地址入栈
         case OpCode.ADDR: this.loadAddress(); break;
         // 字符串入栈
         case OpCode.STR: this.loadString(); break;
 
+        /**
+         * 基本栈操作
+         */
         // 出栈
         case OpCode.POP: this.stack.pop(); break;
-        // 栈顶变量再次入栈
+        // 栈顶变量再次入栈(也即复制栈顶变量, 再放到栈顶, 栈顶相当于有两个一样的值)
         case OpCode.TOP: this.stack.push(this.stack[this.stack.length - 1]); break;
-        // 栈顶两个变量再次入栈
+        // 栈顶两个变量再次入栈(也即复制栈顶的两个变量, 再放到栈顶)
         case OpCode.TOP2: this.stack.push(
           this.stack[this.stack.length - 2],
           this.stack[this.stack.length - 1],
         ); break;
 
+        /**
+         * 栈与scope交互
+         */
         // 栈顶变量出栈, 放入作用域内
         case OpCode.VAR: this.scope.var(this.stack.pop()); break;
         // 从栈顶弹出变量名称,根据该变量称从作用域获取变量值,把变量值入栈
         case OpCode.LOAD: this.stack.push(this.scope.load(this.stack.pop())); break;
-        // 从栈顶弹出变量名称和变量值,更改作用域的对应变量的值
+        // 从栈顶弹出变量名称和变量值, 更新到scope, 然后入栈
         case OpCode.OUT: this.stack.push(this.scope.out(this.stack.pop(), this.stack.pop())); break;
 
+        /**
+         * 分支跳转
+         */
         // 跳到从栈中弹出的地址
         case OpCode.JUMP:
           // 弹出目标地址
@@ -227,7 +239,10 @@ export class VirtualMachine {
           break;
         }
 
-        // 函数声明
+        /**
+         * 函数相关
+         */
+        // 函数入栈
         case OpCode.FUNC: {
           // 弹出函数地址
           const addr = this.stack.pop();
@@ -237,7 +252,9 @@ export class VirtualMachine {
           const name = this.stack.pop();
           const _this = this;
 
+          // 根据上述弹出的数据创建函数对象
           const func = function (this: any, ...args: unknown[]) {
+            // 为函数新建scope实例
             const scope = new Scope(_this.scope);
             scope.var('this');
             scope.out('this', this);
@@ -245,11 +262,14 @@ export class VirtualMachine {
               scope.var(name as string);
               scope.out(name as string, func);
             }
+            // !!!!!注意,可以看到,每运行一个函数,都要新建一个VM实例,该vm实例有自己的stack和scope
             const vm = new VirtualMachine(scope, _this.codes, addr as number, [args]);
             return vm.run();
           }
 
+          // 储存函数名
           Object.defineProperty(func, 'name', { value: name });
+          // 储存参数数组长度
           Object.defineProperty(func, 'length', { value: len });
 
           // 函数入栈
@@ -274,7 +294,9 @@ export class VirtualMachine {
         // 函数返回
         case OpCode.RET: return this.stack.pop();
 
-        // 对象操作
+        /**
+         * 对象操作
+         */
         // 属性读
         case OpCode.GET: {
           const key = this.stack.pop() as string;
@@ -290,7 +312,7 @@ export class VirtualMachine {
           this.stack.push(object[key] = value)
           break;
         }
-        // 属性全部读
+        // in操作 (入栈判断结果,值为true或false)
         case OpCode.IN: {
           const key = this.stack.pop() as string;
           const object = this.stack.pop() as any;
@@ -304,7 +326,9 @@ export class VirtualMachine {
           this.stack.push(delete object[key]);
         }
 
-        // 表运算
+        /**
+         * 表运算
+         */
         case OpCode.EQ: {
           const right = this.stack.pop();
           const left = this.stack.pop();
@@ -354,7 +378,9 @@ export class VirtualMachine {
           break;
         }
 
-        // 数学运算
+        /**
+         * 数学运算
+         */
         case OpCode.ADD: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
@@ -392,7 +418,9 @@ export class VirtualMachine {
           break;
         }
 
-        // 位运算
+        /**
+         * 位运算
+         */
         case OpCode.BNOT: {
           const arg = this.stack.pop() as any;
           this.stack.push(~arg);
@@ -435,7 +463,9 @@ export class VirtualMachine {
           break;
         }
 
-        // 逻辑运算
+        /**
+         * 逻辑运算
+         */
         case OpCode.OR: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
@@ -454,7 +484,9 @@ export class VirtualMachine {
           break;
         }
 
-        // 类型运算
+        /**
+         * 类型运算
+         */
         case OpCode.INSOF: {
           const right = this.stack.pop() as any;
           const left = this.stack.pop() as any;
