@@ -85,9 +85,13 @@ export class GlobalScope extends Scope {
   }
 }
 
+/**
+ * 虚拟机.
+ * 每遇到一个函数调用, 都会新建一个虚拟机实例.
+ */
 export class VirtualMachine {
   /**
-   * 作用域
+   * 作用域. 每个虚拟机实例都有自己独立的作用域
    */
   private scope: any;
   /**
@@ -95,7 +99,7 @@ export class VirtualMachine {
    */
   private codes: number[];
   /**
-   * 栈 (栈式虚拟机的核心)
+   * 栈 (栈式虚拟机的核心). 每个虚拟机实例都有自己独立的栈
    */
   private stack: unknown[];
   /**
@@ -103,6 +107,13 @@ export class VirtualMachine {
   */
   private pieceOfCode: number; 
 
+  /**
+   * 
+   * @param scope 作用域,每个虚拟机实例都有自己独立的作用域,构造虚拟机实例时,会新建Scope实例并作为参数传入虚拟机构造函数
+   * @param codes 操作码列表, 全局仅有一个
+   * @param pc 当前运行位置指针, 全局仅有一个
+   * @param stack 栈,本质上是一个数组.每个虚拟机实例都有自己独立的栈,构造虚拟机实例时,会新建数组然后放入函数参数,最后将该数组作为参数传入构造函数作为栈
+   */
   constructor(scope: any, codes: number[], pc: number = 0, stack: unknown[] = []) {
     this.scope = scope;
     this.codes = codes;
