@@ -10,27 +10,12 @@ f()();
 /**
 * 输出
 */
-ast: {"type":"Program","start":0,"end":874,"body":[{"type":"FunctionDeclaration","start":804,"end":866,"id":{"type":"Identifier","start":813,"end":814,"name":"f"},"params":[],"body":{"type":"BlockStatement","start":816,"end":866,"body":[{"type":"VariableDeclaration","start":819,"end":829,"declarations":[{"type":"VariableDeclarator","start":823,"end":828,"id":{"type":"Identifier","start":823,"end":824,"name":"a"},"init":{"type":"Literal","start":827,"end":828,"value":1,"raw":"1"}}],"kind":"var"},{"type":"ReturnStatement","start":831,"end":864,"argument":{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false}}]},"expression":false},{"type":"ExpressionStatement","start":867,"end":873,"expression":{"type":"CallExpression","start":867,"end":872,"callee":{"type":"CallExpression","start":867,"end":870,"callee":{"type":"Identifier","start":867,"end":868,"name":"f"},"arguments":[]},"arguments":[]}}],"sourceType":"script"}
-
-blocks: [{"type":"Program","start":0,"end":874,"body":[{"type":"FunctionDeclaration","start":804,"end":866,"id":{"type":"Identifier","start":813,"end":814,"name":"f"},"params":[],"body":{"type":"BlockStatement","start":816,"end":866,"body":[{"type":"VariableDeclaration","start":819,"end":829,"declarations":[{"type":"VariableDeclarator","start":823,"end":828,"id":{"type":"Identifier","start":823,"end":824,"name":"a"},"init":{"type":"Literal","start":827,"end":828,"value":1,"raw":"1"}}],"kind":"var"},{"type":"ReturnStatement","start":831,"end":864,"argument":{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false,"declarations":{},"label":".anonymous_3"}}]},"expression":false,"declarations":{},"label":".f_2"},{"type":"ExpressionStatement","start":867,"end":873,"expression":{"type":"CallExpression","start":867,"end":872,"callee":{"type":"CallExpression","start":867,"end":870,"callee":{"type":"Identifier","start":867,"end":868,"name":"f"},"arguments":[]},"arguments":[]}}],"sourceType":"script","declarations":{},"label":".main_1"},{"type":"FunctionDeclaration","start":804,"end":866,"id":{"type":"Identifier","start":813,"end":814,"name":"f"},"params":[],"body":{"type":"BlockStatement","start":816,"end":866,"body":[{"type":"VariableDeclaration","start":819,"end":829,"declarations":[{"type":"VariableDeclarator","start":823,"end":828,"id":{"type":"Identifier","start":823,"end":824,"name":"a"},"init":{"type":"Literal","start":827,"end":828,"value":1,"raw":"1"}}],"kind":"var"},{"type":"ReturnStatement","start":831,"end":864,"argument":{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false,"declarations":{},"label":".anonymous_3"}}]},"expression":false,"declarations":{},"label":".f_2"},{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false,"declarations":{},"label":".anonymous_3"}]
-
-original codes: [
-    9,  0, 102,  0,   0, 16,   2,  7,   0,   0,   0, 0,
-    0,  0,   0,  0,   8,  0,   0,  0,  43,  48,   9, 0,
-  102,  0,   0, 18,  10,  2,   2,  9,   0, 102,   0, 0,
-   17,  4,  49,  4,  49, 10,  51, 10,   9,   0,  97, 0,
-    0, 16,   7, 63, 240,  0,   0,  0,   0,   0,   0, 9,
-    0, 97,   0,  0,  18, 10,   2,  7,   0,   0,   0, 0,
-    0,  0,   0,  0,   8,  0,   0,  0,  85,  48,  51, 1,
-   51, 10,   9,  0,  99,  0, 111,  0, 110,   0, 115, 0,
-  111,  0, 108,  0,
-  ... 38 more items
-]
-
-instructions: [{"type":"label","name":".main_1"},{"type":"opcode","opcode":9},{"type":"data","rawData":"f","data":[0,102,0,0]},{"type":"opcode","opcode":16},{"type":"opcode","opcode":2},{"type":"opcode","opcode":7},{"type":"data","rawData":0,"data":[0,0,0,0,0,0,0,0]},{"type":"opcode","opcode":8},{"type":"reference","label":".f_2"},{"type":"opcode","opcode":48},{"type":"opcode","opcode":9},{"type":"data","rawData":"f","data":[0,102,0,0]},{"type":"opcode","opcode":18},{"type":"opcode","opcode":10},{"type":"opcode","opcode":2},{"type":"opcode","opcode":2},{"type":"opcode","opcode":9},{"type":"data","rawData":"f","data":[0,102,0,0]},{"type":"opcode","opcode":17},{"type":"opcode","opcode":4},{"type":"opcode","opcode":49},{"type":"opcode","opcode":4},{"type":"opcode","opcode":49},{"type":"opcode","opcode":10},{"type":"opcode","opcode":51},{"type":"label","name":".f_2"},{"type":"opcode","opcode":10},{"type":"opcode","opcode":9},{"type":"data","rawData":"a","data":[0,97,0,0]},{"type":"opcode","opcode":16},{"type":"opcode","opcode":7},{"type":"data","rawData":1,"data":[63,240,0,0,0,0,0,0]},{"type":"opcode","opcode":9},{"type":"data","rawData":"a","data":[0,97,0,0]},{"type":"opcode","opcode":18},{"type":"opcode","opcode":10},{"type":"opcode","opcode":2},{"type":"opcode","opcode":7},{"type":"data","rawData":0,"data":[0,0,0,0,0,0,0,0]},{"type":"opcode","opcode":8},{"type":"reference","label":".anonymous_3"},{"type":"opcode","opcode":48},{"type":"opcode","opcode":51},{"type":"opcode","opcode":1},{"type":"opcode","opcode":51},{"type":"label","name":".anonymous_3"},{"type":"opcode","opcode":10},{"type":"opcode","opcode":9},{"type":"data","rawData":"console","data":[0,99,0,111,0,110,0,115,0,111,0,108,0,101,0,0]},{"type":"opcode","opcode":17},{"type":"opcode","opcode":13},{"type":"opcode","opcode":9},{"type":"data","rawData":"log","data":[0,108,0,111,0,103,0,0]},{"type":"opcode","opcode":64},{"type":"opcode","opcode":4},{"type":"opcode","opcode":13},{"type":"opcode","opcode":7},{"type":"data","rawData":0,"data":[0,0,0,0,0,0,0,0]},{"type":"opcode","opcode":9},{"type":"data","rawData":"a","data":[0,97,0,0]},{"type":"opcode","opcode":17},{"type":"opcode","opcode":65},{"type":"opcode","opcode":10},{"type":"opcode","opcode":49},{"type":"opcode","opcode":10},{"type":"opcode","opcode":1},{"type":"opcode","opcode":51}]
 
 instructions prettier:
 .main_1:
+        /**
+        * 以下为函数声明
+        */
         // 入栈字符串'f'
         STR(09)
         "f" (00 66 00 00)
@@ -51,11 +36,15 @@ instructions prettier:
         "f" (00 66 00 00)
         // 出栈两次(字符串f和函数对象),然后根据两个出栈值在scope创建f属性
         OUT(12)
+
+        /**
+        * 以下为函数调用
+        */
         // 出栈
         POP(0a)
-        // 入栈null值
+        // 入栈null值作为this
         NULL(02)
-        // 入栈null值
+        // 入栈null值作为this
         NULL(02)
         // 入栈字符串'f'
         STR(09)
@@ -64,11 +53,11 @@ instructions prettier:
         LOAD(11)
         // 入栈空数组
         ARR(04)
-        // 连续出栈参数, 函数, this变量, 然后调用函数并将返回值入栈
+        // 连续出栈参数数组(本例中为空数组)、 函数、this变量, 然后调用函数并将返回值入栈
         CALL(31)
         // 入栈空数组
         ARR(04)
-        // 连续出栈参数, 函数, this变量, 然后调用函数并将返回值入栈
+        // 连续出栈参数数组(本例中为空数组)、函数、 this变量, 然后调用函数并将返回值入栈
         CALL(31)
         // 出栈
         POP(0a)
@@ -136,6 +125,27 @@ instructions prettier:
         UNDEF(01)
         // 函数返回
         RET(33)
+
+
+ast: {"type":"Program","start":0,"end":874,"body":[{"type":"FunctionDeclaration","start":804,"end":866,"id":{"type":"Identifier","start":813,"end":814,"name":"f"},"params":[],"body":{"type":"BlockStatement","start":816,"end":866,"body":[{"type":"VariableDeclaration","start":819,"end":829,"declarations":[{"type":"VariableDeclarator","start":823,"end":828,"id":{"type":"Identifier","start":823,"end":824,"name":"a"},"init":{"type":"Literal","start":827,"end":828,"value":1,"raw":"1"}}],"kind":"var"},{"type":"ReturnStatement","start":831,"end":864,"argument":{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false}}]},"expression":false},{"type":"ExpressionStatement","start":867,"end":873,"expression":{"type":"CallExpression","start":867,"end":872,"callee":{"type":"CallExpression","start":867,"end":870,"callee":{"type":"Identifier","start":867,"end":868,"name":"f"},"arguments":[]},"arguments":[]}}],"sourceType":"script"}
+
+blocks: [{"type":"Program","start":0,"end":874,"body":[{"type":"FunctionDeclaration","start":804,"end":866,"id":{"type":"Identifier","start":813,"end":814,"name":"f"},"params":[],"body":{"type":"BlockStatement","start":816,"end":866,"body":[{"type":"VariableDeclaration","start":819,"end":829,"declarations":[{"type":"VariableDeclarator","start":823,"end":828,"id":{"type":"Identifier","start":823,"end":824,"name":"a"},"init":{"type":"Literal","start":827,"end":828,"value":1,"raw":"1"}}],"kind":"var"},{"type":"ReturnStatement","start":831,"end":864,"argument":{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false,"declarations":{},"label":".anonymous_3"}}]},"expression":false,"declarations":{},"label":".f_2"},{"type":"ExpressionStatement","start":867,"end":873,"expression":{"type":"CallExpression","start":867,"end":872,"callee":{"type":"CallExpression","start":867,"end":870,"callee":{"type":"Identifier","start":867,"end":868,"name":"f"},"arguments":[]},"arguments":[]}}],"sourceType":"script","declarations":{},"label":".main_1"},{"type":"FunctionDeclaration","start":804,"end":866,"id":{"type":"Identifier","start":813,"end":814,"name":"f"},"params":[],"body":{"type":"BlockStatement","start":816,"end":866,"body":[{"type":"VariableDeclaration","start":819,"end":829,"declarations":[{"type":"VariableDeclarator","start":823,"end":828,"id":{"type":"Identifier","start":823,"end":824,"name":"a"},"init":{"type":"Literal","start":827,"end":828,"value":1,"raw":"1"}}],"kind":"var"},{"type":"ReturnStatement","start":831,"end":864,"argument":{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false,"declarations":{},"label":".anonymous_3"}}]},"expression":false,"declarations":{},"label":".f_2"},{"type":"FunctionExpression","start":838,"end":864,"id":null,"params":[],"body":{"type":"BlockStatement","start":848,"end":864,"body":[{"type":"ExpressionStatement","start":849,"end":863,"expression":{"type":"CallExpression","start":849,"end":863,"callee":{"type":"MemberExpression","start":849,"end":860,"object":{"type":"Identifier","start":849,"end":856,"name":"console"},"property":{"type":"Identifier","start":857,"end":860,"name":"log"},"computed":false},"arguments":[{"type":"Identifier","start":861,"end":862,"name":"a"}]}}]},"expression":false,"declarations":{},"label":".anonymous_3"}]
+
+original codes: [
+    9,  0, 102,  0,   0, 16,   2,  7,   0,   0,   0, 0,
+    0,  0,   0,  0,   8,  0,   0,  0,  43,  48,   9, 0,
+  102,  0,   0, 18,  10,  2,   2,  9,   0, 102,   0, 0,
+   17,  4,  49,  4,  49, 10,  51, 10,   9,   0,  97, 0,
+    0, 16,   7, 63, 240,  0,   0,  0,   0,   0,   0, 9,
+    0, 97,   0,  0,  18, 10,   2,  7,   0,   0,   0, 0,
+    0,  0,   0,  0,   8,  0,   0,  0,  85,  48,  51, 1,
+   51, 10,   9,  0,  99,  0, 111,  0, 110,   0, 115, 0,
+  111,  0, 108,  0,
+  ... 38 more items
+]
+
+instructions: [{"type":"label","name":".main_1"},{"type":"opcode","opcode":9},{"type":"data","rawData":"f","data":[0,102,0,0]},{"type":"opcode","opcode":16},{"type":"opcode","opcode":2},{"type":"opcode","opcode":7},{"type":"data","rawData":0,"data":[0,0,0,0,0,0,0,0]},{"type":"opcode","opcode":8},{"type":"reference","label":".f_2"},{"type":"opcode","opcode":48},{"type":"opcode","opcode":9},{"type":"data","rawData":"f","data":[0,102,0,0]},{"type":"opcode","opcode":18},{"type":"opcode","opcode":10},{"type":"opcode","opcode":2},{"type":"opcode","opcode":2},{"type":"opcode","opcode":9},{"type":"data","rawData":"f","data":[0,102,0,0]},{"type":"opcode","opcode":17},{"type":"opcode","opcode":4},{"type":"opcode","opcode":49},{"type":"opcode","opcode":4},{"type":"opcode","opcode":49},{"type":"opcode","opcode":10},{"type":"opcode","opcode":51},{"type":"label","name":".f_2"},{"type":"opcode","opcode":10},{"type":"opcode","opcode":9},{"type":"data","rawData":"a","data":[0,97,0,0]},{"type":"opcode","opcode":16},{"type":"opcode","opcode":7},{"type":"data","rawData":1,"data":[63,240,0,0,0,0,0,0]},{"type":"opcode","opcode":9},{"type":"data","rawData":"a","data":[0,97,0,0]},{"type":"opcode","opcode":18},{"type":"opcode","opcode":10},{"type":"opcode","opcode":2},{"type":"opcode","opcode":7},{"type":"data","rawData":0,"data":[0,0,0,0,0,0,0,0]},{"type":"opcode","opcode":8},{"type":"reference","label":".anonymous_3"},{"type":"opcode","opcode":48},{"type":"opcode","opcode":51},{"type":"opcode","opcode":1},{"type":"opcode","opcode":51},{"type":"label","name":".anonymous_3"},{"type":"opcode","opcode":10},{"type":"opcode","opcode":9},{"type":"data","rawData":"console","data":[0,99,0,111,0,110,0,115,0,111,0,108,0,101,0,0]},{"type":"opcode","opcode":17},{"type":"opcode","opcode":13},{"type":"opcode","opcode":9},{"type":"data","rawData":"log","data":[0,108,0,111,0,103,0,0]},{"type":"opcode","opcode":64},{"type":"opcode","opcode":4},{"type":"opcode","opcode":13},{"type":"opcode","opcode":7},{"type":"data","rawData":0,"data":[0,0,0,0,0,0,0,0]},{"type":"opcode","opcode":9},{"type":"data","rawData":"a","data":[0,97,0,0]},{"type":"opcode","opcode":17},{"type":"opcode","opcode":65},{"type":"opcode","opcode":10},{"type":"opcode","opcode":49},{"type":"opcode","opcode":10},{"type":"opcode","opcode":1},{"type":"opcode","opcode":51}]
+
 
 stack: []
 
